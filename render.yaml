@@ -2,7 +2,7 @@ services:
   - type: web
     name: ishraq-api
     env: node
-    buildCommand: npm run build:api
+    buildCommand: npm install && npm run build:api
     startCommand: npm --workspace=apps/api run start
     envVars:
       - key: NODE_ENV
