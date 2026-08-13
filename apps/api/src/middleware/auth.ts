@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken, JwtPayload } from '../utils/jwt.js';
+import { User } from '../models/User.js';
 import { UserRole } from '@ishraq/shared-types';
 
 declare global {
@@ -11,7 +12,11 @@ declare global {
   }
 }
 
-export const requireAuth = (req: Request, res: Response, next: NextFunction): void => {
+export const requireAuth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   let token: string | undefined = req.cookies?.ishraq_session;
 
   if (!token && req.headers.authorization?.startsWith('Bearer ')) {
@@ -25,7 +30,28 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction): vo
 
   try {
     const decoded = verifyToken(token);
-    req.user = decoded;
+
+    // Request-level banned check per Prompt 12 §11-15
+    const userDoc = await User.findById(decoded.userId).select('isBanned banReason role');
+
+    if (!userDoc) {
+      res.status(401).json({ error: 'Unauthorized: User account no longer exists' });
+      return;
+    }
+
+    if (userDoc.isBanned) {
+      res.status(403).json({
+        error: `Account banned: ${userDoc.banReason || 'Violation of community policies'}`,
+      });
+      return;
+    }
+
+    // Keep req.user in sync with database role (handles instant role promotions)
+    req.user = {
+      userId: String(userDoc._id),
+      role: userDoc.role,
+    };
+
     next();
   } catch (error) {
     res.status(401).json({ error: 'Unauthorized: Invalid or expired token' });

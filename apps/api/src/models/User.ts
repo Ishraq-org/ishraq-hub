@@ -13,6 +13,8 @@ export interface IUserDocument extends Document {
   emailVerificationExpires?: Date | null;
   passwordResetToken?: string | null;
   passwordResetExpires?: Date | null;
+  isBanned: boolean;
+  banReason?: string | null;
   bookmarks: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
@@ -71,6 +73,14 @@ const UserSchema = new Schema<IUserDocument>(
     },
     passwordResetExpires: {
       type: Date,
+      default: null,
+    },
+    isBanned: {
+      type: Boolean,
+      default: false,
+    },
+    banReason: {
+      type: String,
       default: null,
     },
     bookmarks: [

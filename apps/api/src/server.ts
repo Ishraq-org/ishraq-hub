@@ -6,6 +6,9 @@ import passport from './config/passport.js';
 import healthRouter from './routes/health.routes.js';
 import authRouter from './routes/auth.routes.js';
 import articlesRouter from './routes/articles.js';
+import topicsRouter from './routes/topics.js';
+import adminDashboardRouter from './routes/admin-dashboard.js';
+import adminUsersRouter from './routes/admin-users.js';
 import { connectDB } from './config/db.js';
 
 dotenv.config();
@@ -25,6 +28,9 @@ app.use(passport.initialize());
 app.use('/api', healthRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/articles', articlesRouter);
+app.use('/api/topics', topicsRouter);
+app.use('/api/admin', adminDashboardRouter);
+app.use('/api/admin/users', adminUsersRouter);
 
 // Attempt database connection if URI exists
 connectDB();

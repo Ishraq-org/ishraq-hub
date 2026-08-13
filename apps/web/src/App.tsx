@@ -17,6 +17,11 @@ import PolicyPage from './pages/policy/PolicyPage';
 import NewArticlePage from './pages/editor/NewArticlePage';
 import ArticleEditorPage from './pages/editor/ArticleEditorPage';
 import ArticleReadingPage from './pages/article/ArticleReadingPage';
+import AdminDashboard from './pages/admin/Dashboard';
+import AdminTopics from './pages/admin/Topics';
+import AdminArticles from './pages/admin/Articles';
+import AdminUsers from './pages/admin/Users';
+import MySubmissions from './pages/contributor/MySubmissions';
 import useT from './hooks/useT';
 
 const queryClient = new QueryClient({
@@ -153,12 +158,24 @@ const ProtectedDashboardDemo: React.FC = () => {
         <p className="text-sm text-[var(--text-muted)]">
           Welcome <strong className="text-[var(--text-primary)]">{user?.name}</strong>! You successfully passed the <code className="font-mono text-xs">ProtectedRoute</code> check.
         </p>
-        <Link
-          to="/"
-          className="inline-block text-xs font-semibold px-4 py-2 rounded border border-[var(--border)] bg-[var(--bg-primary)] hover:bg-[var(--border)] transition-colors mt-2"
-        >
-          ← Return to Home
-        </Link>
+        <div className="flex flex-wrap justify-center gap-2 pt-2">
+          {user?.role === 'super_admin' && (
+            <Link
+              to="/admin"
+              className="inline-block text-xs font-semibold px-4 py-2 rounded bg-[var(--accent)] text-[var(--bg-secondary)] hover:opacity-90 transition-opacity"
+            >
+              Go to Admin Panel →
+            </Link>
+          )}
+          {(user?.role === 'contributor' || user?.role === 'super_admin') && (
+            <Link
+              to="/contributor/my-submissions"
+              className="inline-block text-xs font-semibold px-4 py-2 rounded border border-[var(--border)] bg-[var(--bg-primary)] hover:bg-[var(--border)] transition-colors"
+            >
+              My Submissions →
+            </Link>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -197,6 +214,61 @@ export function App() {
                   </ProtectedRoute>
                 }
               />
+
+              {/* Contributor Portal Route */}
+              <Route
+                path="/contributor/my-submissions"
+                element={
+                  <ProtectedRoute>
+                    <RoleGate allowedRoles={['contributor', 'super_admin']}>
+                      <MySubmissions />
+                    </RoleGate>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Admin Panel Routes (Super Admin Only) */}
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute>
+                    <RoleGate allowedRoles={['super_admin']}>
+                      <AdminDashboard />
+                    </RoleGate>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/topics"
+                element={
+                  <ProtectedRoute>
+                    <RoleGate allowedRoles={['super_admin']}>
+                      <AdminTopics />
+                    </RoleGate>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/articles"
+                element={
+                  <ProtectedRoute>
+                    <RoleGate allowedRoles={['super_admin']}>
+                      <AdminArticles />
+                    </RoleGate>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/users"
+                element={
+                  <ProtectedRoute>
+                    <RoleGate allowedRoles={['super_admin']}>
+                      <AdminUsers />
+                    </RoleGate>
+                  </ProtectedRoute>
+                }
+              />
+
               {/* Editor Routes (Protected for Contributors & Super Admins) */}
               <Route
                 path="/editor/new"
