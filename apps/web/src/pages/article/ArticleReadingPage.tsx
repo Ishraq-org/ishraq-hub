@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Icon } from '../../components/icons';
 import { TipTapRenderer, extractHeadingsFromContent } from '../../components/article-render/TipTapRenderer';
 import { TableOfContents } from '../../components/article-render/TableOfContents';
+import { AdSlot } from '../../components/ads/AdSlot';
 
 function computeReadingTime(content: any): number {
   if (!content) return 1;
@@ -260,6 +261,9 @@ export const ArticleReadingPage: React.FC = () => {
             </div>
           </section>
         )}
+
+        {/* 9. Article Footer Ad Placement (Prompt 18 §43-56 — Consent-gated, never inside article body) */}
+        <AdSlot slot="article-footer" />
       </main>
 
       {/* 9. Table of Contents Bottom Sheet Button */}
