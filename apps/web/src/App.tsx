@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Link, useParams, useSearchParams } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { ThemeProvider } from './context/ThemeContext';
 import { Icon } from './components/icons';
@@ -8,6 +8,9 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { RoleGate } from './components/RoleGate';
 import Layout from './components/Layout';
 import AuthLayout from './components/AuthLayout';
+import Home from './pages/Home';
+import BrowseTopicsPage from './pages/browse/BrowseTopicsPage';
+import BrowseTopicDetailPage from './pages/browse/BrowseTopicDetailPage';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import VerifyEmail from './pages/auth/VerifyEmail';
@@ -21,8 +24,8 @@ import AdminDashboard from './pages/admin/Dashboard';
 import AdminTopics from './pages/admin/Topics';
 import AdminArticles from './pages/admin/Articles';
 import AdminUsers from './pages/admin/Users';
+import AdminSponsors from './pages/admin/Sponsors';
 import MySubmissions from './pages/contributor/MySubmissions';
-import useT from './hooks/useT';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,116 +35,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-const HomePage: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const [dismissBanner, setDismissBanner] = useState(false);
-  const { language } = useT();
-
-  const { data } = useQuery({
-    queryKey: ['me'],
-    queryFn: fetchMeApi,
-    retry: false,
-  });
-
-  const user = data?.user;
-  const isUnverified = user && !user.emailVerified;
-  const showUnverifiedBanner = (isUnverified || searchParams.get('verified') === 'false') && !dismissBanner;
-
-  return (
-    <div className="flex-1 flex flex-col items-center justify-center p-6 max-w-4xl mx-auto w-full space-y-8">
-      {/* Top Banner for unverified users */}
-      {showUnverifiedBanner && (
-        <div className="w-full bg-[var(--accent)] text-[var(--bg-secondary)] px-4 py-2.5 rounded-lg flex items-center justify-between text-xs font-medium shadow-sm">
-          <div className="flex items-center gap-2">
-            <Icon name="mail" size={16} />
-            <span>Please check your inbox to verify your email address. Unverified accounts have restricted access.</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setDismissBanner(true)}
-            className="hover:opacity-80 transition-opacity p-1"
-          >
-            <Icon name="close" size={16} />
-          </button>
-        </div>
-      )}
-
-      {/* Hero Content */}
-      <div className="text-center space-y-4 pt-6">
-        <span className="inline-block px-3 py-1 rounded-full border border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--accent)] font-mono text-xs uppercase tracking-wider font-semibold">
-          Wikipedia-Style Apologetics Hub
-        </span>
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-[var(--text-primary)] tracking-tight">
-          Ishraq Hub
-        </h1>
-        <p className="text-base sm:text-lg text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed">
-          Illuminating the Ummah with knowledge-centric Islamic apologetics and educational research across English and Amharic.
-        </p>
-      </div>
-
-      {/* Cards Grid */}
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="p-6 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] space-y-4 shadow-sm">
-          <h2 className="text-lg font-bold text-[var(--accent)] flex items-center gap-2">
-            <Icon name="lock" size={20} /> Protected Member Dashboard
-          </h2>
-          <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-            Protected by `ProtectedRoute` wrapper requiring valid `ishraq_session` cookie authentication.
-          </p>
-          <Link
-            to="/dashboard"
-            className="inline-block text-xs font-semibold px-4 py-2 rounded bg-[var(--accent)] text-[var(--bg-secondary)] hover:bg-[var(--accent-hover)] transition-colors"
-          >
-            Access Dashboard →
-          </Link>
-        </div>
-
-        <div className="p-6 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] space-y-4 shadow-sm">
-          <h2 className="text-lg font-bold text-[var(--accent)] flex items-center gap-2">
-            <Icon name="user" size={20} /> Multilingual Topic Routing
-          </h2>
-          <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-            Content routes are language-prefixed for SEO: `/{language}/topics` or `/{language}/topics/shubha-refutations`.
-          </p>
-          <Link
-            to={`/${language}/topics`}
-            className="inline-block text-xs font-semibold px-4 py-2 rounded border border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-primary)] hover:border-[var(--accent)] transition-colors"
-          >
-            Browse Topics ({language.toUpperCase()}) →
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/* Language Prefixed Topic Placeholder Screen */
-const TopicPlaceholder: React.FC = () => {
-  const { lang, slug } = useParams<{ lang: string; slug?: string }>();
-
-  return (
-    <div className="flex-1 flex flex-col items-center justify-center p-6 max-w-2xl mx-auto w-full text-center space-y-4">
-      <div className="w-12 h-12 rounded-full bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center justify-center text-[var(--accent)] mx-auto font-bold text-lg">
-        {lang?.toUpperCase() || 'EN'}
-      </div>
-      <h1 className="text-2xl font-bold text-[var(--text-primary)]">
-        {slug ? `Topic: ${slug}` : 'Topics Directory'}
-      </h1>
-      <p className="text-xs text-[var(--text-muted)]">
-        Language Prefix: <code className="font-mono text-[var(--accent)]">/{lang}</code>
-      </p>
-      <div className="pt-2">
-        <Link
-          to="/"
-          className="inline-block text-xs font-semibold px-4 py-2 rounded border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--border)] transition-colors"
-        >
-          ← Back Home
-        </Link>
-      </div>
-    </div>
-  );
-};
 
 /* Protected Dashboard Component */
 const ProtectedDashboardDemo: React.FC = () => {
@@ -192,13 +85,14 @@ export function App() {
 
             {/* Main Application Layout Wrapper */}
             <Route element={<Layout />}>
-              <Route path="/" element={<HomePage />} />
+              {/* Homepage Landing Explainer (Prompt 15 §46-72) */}
+              <Route path="/" element={<Home />} />
 
-              {/* Language-Prefixed Topic Content Routes */}
-              <Route path="/:lang/topics" element={<TopicPlaceholder />} />
-              <Route path="/:lang/topics/:slug" element={<TopicPlaceholder />} />
+              {/* Public Topic Directory & Detail Browse Routes (Prompt 15 §73-88) */}
+              <Route path="/:lang/topics" element={<BrowseTopicsPage />} />
+              <Route path="/:lang/topics/:slug" element={<BrowseTopicDetailPage />} />
 
-              {/* Static Policy Placeholder Routes (Unprefixed) */}
+              {/* Static Policy Routes */}
               <Route path="/privacy" element={<PolicyPage />} />
               <Route path="/terms" element={<PolicyPage />} />
               <Route path="/cookies" element={<PolicyPage />} />
@@ -268,8 +162,18 @@ export function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/admin/sponsors"
+                element={
+                  <ProtectedRoute>
+                    <RoleGate allowedRoles={['super_admin']}>
+                      <AdminSponsors />
+                    </RoleGate>
+                  </ProtectedRoute>
+                }
+              />
 
-              {/* Editor Routes (Protected for Contributors & Super Admins) */}
+              {/* Editor Routes */}
               <Route
                 path="/editor/new"
                 element={
@@ -292,7 +196,7 @@ export function App() {
               />
             </Route>
 
-            {/* Auth Layout Wrapper (Stripped-Down Chrome) */}
+            {/* Auth Layout Wrapper */}
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />

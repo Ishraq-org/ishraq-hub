@@ -10,6 +10,7 @@ import topicsRouter from './routes/topics.js';
 import adminDashboardRouter from './routes/admin-dashboard.js';
 import adminUsersRouter from './routes/admin-users.js';
 import uploadsRouter from './routes/uploads.js';
+import sponsorsRouter from './routes/sponsors.js';
 import { connectDB } from './config/db.js';
 
 dotenv.config();
@@ -33,6 +34,7 @@ app.use('/api/topics', topicsRouter);
 app.use('/api/admin', adminDashboardRouter);
 app.use('/api/admin/users', adminUsersRouter);
 app.use('/api/uploads', uploadsRouter);
+app.use('/api/sponsors', sponsorsRouter);
 
 // Attempt database connection if URI exists
 connectDB();
