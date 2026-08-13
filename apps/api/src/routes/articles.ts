@@ -7,6 +7,7 @@ import { User } from '../models/User.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { validateBody } from '../middleware/validate.js';
 import { syncArticleLinks } from '../services/link-graph.js';
+import { generateShubhaScaffold } from '../services/shubhaScaffold.js';
 import { z } from 'zod';
 import { ArticleTypeSchema, ArticleLanguageSchema } from '@ishraq/shared-types';
 
@@ -283,10 +284,13 @@ articlesRouter.post(
       });
       await newArticle.save();
 
-      const emptyTipTapContent = {
-        type: 'doc',
-        content: [{ type: 'paragraph' }],
-      };
+      const initialTipTapContent =
+        articleType === 'shubha'
+          ? generateShubhaScaffold()
+          : {
+              type: 'doc',
+              content: [{ type: 'paragraph' }],
+            };
 
       const initialSlug = slugify(title);
       const newTranslation = new ArticleTranslation({
@@ -294,14 +298,14 @@ articlesRouter.post(
         language,
         title,
         slug: initialSlug,
-        content: emptyTipTapContent,
+        content: initialTipTapContent,
         status: 'draft',
         authorId: new mongoose.Types.ObjectId(userId),
         versionHistory: [
           {
             editorId: new mongoose.Types.ObjectId(userId),
             timestamp: new Date(),
-            summary: 'Initial draft created',
+            summary: articleType === 'shubha' ? 'Initial shubha scaffold created' : 'Initial draft created',
           },
         ],
       });
@@ -311,6 +315,50 @@ articlesRouter.post(
         message: 'Article created successfully',
         article: newArticle,
         translation: newTranslation,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// PATCH /api/articles/:articleId/settings — Update article shell settings (Prompt 14 §80-95)
+articlesRouter.patch(
+  '/:articleId/settings',
+  requireAuth,
+  requireRole('contributor', 'super_admin'),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const articleId = getParam(req.params, 'articleId');
+      const { topicId, category, tags, nextRelatedShubha } = req.body;
+
+      const article = await Article.findById(articleId);
+      if (!article) {
+        res.status(404).json({ error: 'Article shell not found' });
+        return;
+      }
+
+      if (topicId && mongoose.Types.ObjectId.isValid(topicId)) {
+        article.topicId = new mongoose.Types.ObjectId(topicId);
+      }
+      if (category) {
+        article.category = category;
+      }
+      if (Array.isArray(tags)) {
+        article.tags = tags;
+      }
+      if (nextRelatedShubha !== undefined) {
+        article.nextRelatedShubha =
+          nextRelatedShubha && mongoose.Types.ObjectId.isValid(nextRelatedShubha)
+            ? new mongoose.Types.ObjectId(nextRelatedShubha)
+            : null;
+      }
+
+      await article.save();
+
+      res.json({
+        message: 'Article settings updated successfully',
+        article,
       });
     } catch (error) {
       next(error);

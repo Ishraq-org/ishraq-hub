@@ -52,6 +52,20 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/* TipTap Ghost Placeholder Styling per Prompt 14 §20-33 */
+.ProseMirror p.is-empty::before,
+.ProseMirror h1.is-empty::before,
+.ProseMirror h2.is-empty::before,
+.ProseMirror h3.is-empty::before {
+  color: var(--text-muted);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  font-style: italic;
+  opacity: 0.7;
+}
+
 /* Custom Selection Highlight */
 ::selection {
   background-color: var(--accent);

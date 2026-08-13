@@ -21,6 +21,11 @@ export const ArticleEditorPage: React.FC = () => {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Next Related Shubha search state (Prompt 14 §80-96)
+  const [shubhaSearchQuery, setShubhaSearchQuery] = useState('');
+  const [shubhaSearchResults, setShubhaSearchResults] = useState<any[]>([]);
+  const [isSearchingShubha, setIsSearchingShubha] = useState(false);
+
   // Fetch current user
   const { data: meData } = useQuery({
     queryKey: ['me'],
@@ -58,6 +63,37 @@ export const ArticleEditorPage: React.FC = () => {
     }
   }, [translationData]);
 
+  // Next Related Shubha debounced search (Prompt 14 §90-94)
+  const lang = language || 'en';
+  useEffect(() => {
+    if (!shubhaSearchQuery.trim()) {
+      setShubhaSearchResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearchingShubha(true);
+      try {
+        const res = await fetch(
+          `/api/articles/search?q=${encodeURIComponent(shubhaSearchQuery)}&language=${lang}`
+        );
+        if (res.ok) {
+          const json = await res.json();
+          // Filter out self from search results
+          setShubhaSearchResults(
+            (json.results || []).filter((item: any) => item.articleId !== articleId)
+          );
+        }
+      } catch (err) {
+        console.error('Shubha search failed:', err);
+      } finally {
+        setIsSearchingShubha(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [shubhaSearchQuery, lang, articleId]);
+
   // Patch / Autosave Mutation
   const patchMutation = useMutation({
     mutationFn: async (payload: { title?: string; content?: Record<string, any>; coverImage?: string | null }) => {
@@ -79,6 +115,27 @@ export const ArticleEditorPage: React.FC = () => {
     onError: (err: any) => {
       setSaveState('error');
       setErrorMessage(err.message);
+    },
+  });
+
+  // Update Article Shell Settings (Next Related Shubha)
+  const updateSettingsMutation = useMutation({
+    mutationFn: async (payload: { nextRelatedShubha: string | null }) => {
+      const res = await fetch(`/api/articles/${articleId}/settings`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error || 'Failed to update article settings');
+      }
+      return json.article;
+    },
+    onSuccess: () => {
+      setShubhaSearchQuery('');
+      setShubhaSearchResults([]);
+      queryClient.invalidateQueries({ queryKey: ['articleTranslation', articleId, language] });
     },
   });
 
@@ -196,11 +253,11 @@ export const ArticleEditorPage: React.FC = () => {
     );
   }
 
-  const lang = language || 'en';
   const isOwner = currentUser && (translationData.authorId === currentUser._id || translationData.authorId === (currentUser as any).userId);
   const isSuperAdmin = currentUser && currentUser.role === 'super_admin';
   const isPublished = translationData.status === 'published';
   const isReadOnly = isPublished && !isSuperAdmin;
+  const isShubha = translationData.articleType === 'shubha';
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] pb-16">
@@ -218,7 +275,7 @@ export const ArticleEditorPage: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-[var(--accent)]">
-                {lang.toUpperCase()} Draft
+                {lang.toUpperCase()} {isShubha ? 'Shubha Refutation' : 'Draft'}
               </span>
               <span
                 className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
@@ -313,7 +370,85 @@ export const ArticleEditorPage: React.FC = () => {
           </div>
         )}
 
-        {/* Article Cover Image Upload (Prompt 13 §90-91) */}
+        {/* Next Related Shubha Selector Panel (Prompt 14 §80-96 — Visible only when articleType === 'shubha') */}
+        {isShubha && !isReadOnly && (
+          <div className="bg-[var(--bg-secondary)] p-5 rounded-xl border border-[var(--border)] shadow-sm space-y-3 text-xs">
+            <div className="flex items-center justify-between border-b border-[var(--border)] pb-2">
+              <span className="font-bold text-[var(--accent)] flex items-center gap-1.5">
+                <Icon name="link" size={14} />
+                <span>Next Related Shubha Recommendation Card</span>
+              </span>
+              <span className="text-[10px] text-[var(--text-muted)] italic">
+                Renders at end of reading page
+              </span>
+            </div>
+
+            {translationData.nextRelatedShubhaPreview ? (
+              <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--bg-primary)] flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-[var(--text-primary)]">
+                    {translationData.nextRelatedShubhaPreview.title}
+                  </p>
+                  <p className="text-[10px] text-[var(--text-muted)] font-mono">
+                    /{lang}/articles/{translationData.nextRelatedShubhaPreview.slug}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => updateSettingsMutation.mutate({ nextRelatedShubha: null })}
+                  className="px-2.5 py-1 rounded border border-rose-900/50 text-rose-400 hover:bg-rose-950/40 text-[11px] font-semibold"
+                >
+                  Clear Selection
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-[11px] text-[var(--text-muted)]">
+                  Search published articles to recommend as the "Continue Reading" next related shubha card:
+                </p>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search published shubhas by title..."
+                    value={shubhaSearchQuery}
+                    onChange={(e) => setShubhaSearchQuery(e.target.value)}
+                    className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none"
+                  />
+                  <div className="absolute left-2.5 top-2 text-[var(--text-muted)]">
+                    <Icon name="search" size={14} />
+                  </div>
+                </div>
+
+                {isSearchingShubha ? (
+                  <p className="text-[10px] text-[var(--text-muted)] italic p-2">Searching...</p>
+                ) : shubhaSearchResults.length > 0 ? (
+                  <div className="max-h-40 overflow-y-auto divide-y divide-[var(--border)] border border-[var(--border)] rounded-lg bg-[var(--bg-primary)] p-1">
+                    {shubhaSearchResults.map((item) => (
+                      <button
+                        key={item.articleId}
+                        type="button"
+                        onClick={() =>
+                          updateSettingsMutation.mutate({ nextRelatedShubha: item.articleId })
+                        }
+                        className="w-full p-2 text-left hover:bg-[var(--bg-secondary)] rounded transition-colors flex items-center justify-between"
+                      >
+                        <div>
+                          <p className="font-bold text-[var(--text-primary)]">{item.title}</p>
+                          <p className="text-[10px] text-[var(--text-muted)] font-mono">
+                            Category: {item.category}
+                          </p>
+                        </div>
+                        <span className="text-[10px] font-bold text-[var(--accent)]">Select →</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Cover Image Upload */}
         {!isReadOnly && (
           <div className="bg-[var(--bg-secondary)] p-5 rounded-xl border border-[var(--border)] shadow-sm">
             <ImageUploadField

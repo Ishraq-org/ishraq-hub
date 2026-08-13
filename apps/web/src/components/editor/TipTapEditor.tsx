@@ -5,6 +5,7 @@ import { Table } from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
+import Placeholder from '@tiptap/extension-placeholder';
 import Suggestion from '@tiptap/suggestion';
 import tippy, { Instance as TippyInstance } from 'tippy.js';
 import { ReactRenderer } from '@tiptap/react';
@@ -144,6 +145,33 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
       TableHeader,
       TableCell,
       ArticleLinkMark,
+      // Contextual Ghost Guidance Placeholder Extension (Prompt 14 §20-33)
+      Placeholder.configure({
+        placeholder: ({ node, pos, editor }: any) => {
+          try {
+            const parentNode = editor.state.doc.resolve(pos).parent;
+            if (parentNode && parentNode.type.name === 'callout') {
+              const variant = parentNode.attrs?.variant;
+              if (variant === 'claim') {
+                return "State the opponent's central claim fairly and clearly — what exactly is being claimed?";
+              }
+              if (variant === 'answer') {
+                return 'Give your core answer here. The reader should understand your position before the detailed explanation.';
+              }
+              if (variant === 'summary') {
+                return 'Summarize the logical flow: Claim → Answer → Evidence → Explanation → Conclusion.';
+              }
+            }
+          } catch {
+            // Ignore resolution edge cases
+          }
+
+          if (node.type.name === 'paragraph') {
+            return "Type '/' for custom blocks or write content here...";
+          }
+          return 'Write content...';
+        },
+      }),
       SlashCommandExtension,
       // All 6 Custom Node Extensions
       QuranVerseNode,
@@ -191,7 +219,6 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
           content: [
             {
               type: 'paragraph',
-              content: [{ type: 'text', text: 'Enter callout content here...' }],
             },
           ],
         })

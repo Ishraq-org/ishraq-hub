@@ -6,7 +6,7 @@ import { ImageUploadField } from '../../components/ImageUploadField';
 
 export const NewArticlePage: React.FC = () => {
   const navigate = useNavigate();
-  const [articleType, setArticleType] = useState<'term' | 'general'>('term');
+  const [articleType, setArticleType] = useState<'term' | 'general' | 'shubha'>('term');
   const [title, setTitle] = useState('');
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [language, setLanguage] = useState<'en' | 'am'>('en');
@@ -100,10 +100,10 @@ export const NewArticlePage: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6 text-xs">
-          {/* Article Type */}
+          {/* Article Type (Prompt 14 §72-78) */}
           <div>
             <label className="block font-semibold mb-2">Article Type</label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <button
                 type="button"
                 onClick={() => setArticleType('term')}
@@ -131,6 +131,24 @@ export const NewArticlePage: React.FC = () => {
                 <p className="font-semibold text-sm">General Article</p>
                 <p className="text-[10px] text-[var(--text-muted)] mt-0.5">
                   In-depth scholarly research essay
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setArticleType('shubha')}
+                className={`p-3 rounded-lg border text-left transition-colors ${
+                  articleType === 'shubha'
+                    ? 'border-[var(--accent)] bg-[var(--accent)]/15 font-bold shadow-sm'
+                    : 'border-[var(--border)] bg-[var(--bg-primary)] hover:border-[var(--accent)]'
+                }`}
+              >
+                <p className="font-semibold text-sm text-[var(--accent)] flex items-center gap-1">
+                  <span>Shubha Refutation</span>
+                  <Icon name="check" size={14} />
+                </p>
+                <p className="text-[10px] text-[var(--text-muted)] mt-0.5">
+                  Auto-scaffolded misconception refutation template
                 </p>
               </button>
             </div>
