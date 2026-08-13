@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <g fill="currentColor" text-rendering="geometricPrecision">
+    <!-- Top Golden Flame Diamond Nuqta -->
+    <polygon points="256,48 288,88 256,128 224,88" fill="#D2A857" />
+
+    <!-- Fluid Calligraphic Flame / Light Teardrop (Alif of Ishraq) -->
+    <path d="M 256,156 
+             C 288,200 352,264 352,336 
+             C 352,400 308,448 256,448 
+             C 204,448 160,400 160,336 
+             C 160,264 224,200 256,156 Z 
+             M 256,220 
+             C 240,250 204,295 204,336 
+             C 204,370 226,396 256,396 
+             C 286,396 308,370 308,336 
+             C 308,295 272,250 256,220 Z" 
+             fill-rule="evenodd" />
+
+    <!-- Inner Calligraphic Alif Stroke -->
+    <path d="M 256,248 C 248,280 236,320 236,352 C 236,370 244,380 256,380 C 268,380 276,370 276,352 C 276,320 264,280 256,248 Z" fill="#D2A857" />
+  </g>
+</svg>

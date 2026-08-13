@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <g fill="currentColor" text-rendering="geometricPrecision">
+    <!-- Left Crescent Half-Moon -->
+    <path d="M 230,416 C 140,416 64,344 64,256 C 64,168 140,96 230,96 C 185,135 160,192 160,256 C 160,320 185,377 230,416 Z" />
+    
+    <!-- Right Symmetry Crescent Half-Moon -->
+    <path d="M 282,96 C 372,96 448,168 448,256 C 448,344 372,416 282,416 C 327,377 352,320 352,256 C 352,192 327,135 282,96 Z" opacity="0.85" />
+
+    <!-- 8 Radiating Light Rays emanating outward -->
+    <path d="M 256,48 L 256,128 M 256,384 L 256,464 M 48,256 L 128,256 M 384,256 L 464,256 M 108,108 L 164,164 M 348,348 L 404,404 M 108,404 L 164,348 M 348,164 L 404,108" stroke="currentColor" stroke-width="20" stroke-linecap="round" fill="none" />
+
+    <!-- Central 8-Pointed Star of Illumination -->
+    <polygon points="256,176 272,216 312,200 296,240 336,256 296,272 312,312 272,296 256,336 240,296 200,312 216,272 176,256 216,240 200,200 240,216" opacity="0.95" />
+  </g>
+</svg>

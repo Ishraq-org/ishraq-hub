@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <g fill="currentColor" text-rendering="geometricPrecision">
+    <!-- Top Glowing Khatam Star Crest -->
+    <polygon points="256,48 268,80 300,68 288,100 320,112 288,124 300,156 268,144 256,176 244,144 212,156 224,124 192,112 224,100 212,68 244,80" />
+
+    <!-- Left 'I' Pillar (Light Beacon) -->
+    <rect x="144" y="160" width="48" height="240" rx="8" />
+
+    <!-- Right 'H' Pillar (Knowledge Column) -->
+    <rect x="320" y="160" width="48" height="240" rx="8" />
+
+    <!-- Interlocking Center Bridge forming an Open Book Folio -->
+    <path d="M192 280 C216 260 240 260 256 272 C272 260 296 260 320 280 L320 320 C296 300 272 300 256 312 C240 300 216 300 192 320 Z" fill-opacity="0.85" />
+  </g>
+</svg>

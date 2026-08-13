@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <g fill="currentColor" text-rendering="geometricPrecision">
+    <!-- Upward Cradling Half-Moon Curve -->
+    <path d="M 64,220 C 64,340 150,432 256,432 C 362,432 448,340 448,220 C 400,280 330,340 256,340 C 182,340 112,280 64,220 Z" />
+
+    <!-- Radiating Light Beams Rising Upwards from Half-Moon Center -->
+    <polygon points="256,72 268,260 244,260" />
+    <polygon points="172,108 248,268 228,252" />
+    <polygon points="340,108 284,252 264,268" />
+    <polygon points="104,176 236,280 220,260" />
+    <polygon points="408,176 292,260 276,280" />
+
+    <!-- Central Glowing Core Star -->
+    <circle cx="256" cy="270" r="28" fill="#F2EEE6" fill-opacity="0.95" />
+    <polygon points="256,234 266,258 292,246 280,270 306,280 280,290 292,314 266,302 256,326 246,302 220,314 232,290 206,280 232,270 220,246 246,258" />
+  </g>
+</svg>

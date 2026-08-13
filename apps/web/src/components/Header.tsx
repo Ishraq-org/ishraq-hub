@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchMeApi, logoutApi } from '../api/auth';
 import { ThemeToggle } from '../context/ThemeContext';
 import { Icon } from './icons';
+import { IshraqLogo } from './IshraqLogo';
 import { useT } from '../hooks/useT';
 
 export const Header: React.FC = () => {
@@ -56,9 +57,10 @@ export const Header: React.FC = () => {
         <div className="flex items-center gap-8">
           <Link
             to="/"
-            className="text-xl font-bold tracking-tight text-[var(--accent)] hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2.5 text-xl font-bold tracking-tight text-[var(--accent)] hover:opacity-90 transition-opacity"
           >
-            Ishraq Hub
+            <IshraqLogo size={28} />
+            <span>Ishraq Hub</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -220,9 +222,10 @@ export const Header: React.FC = () => {
                 <Link
                   to="/"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-lg font-bold text-[var(--accent)]"
+                  className="flex items-center gap-2 text-lg font-bold text-[var(--accent)]"
                 >
-                  Ishraq Hub
+                  <IshraqLogo size={24} />
+                  <span>Ishraq Hub</span>
                 </Link>
                 <button
                   type="button"

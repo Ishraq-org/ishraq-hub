@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <g fill="currentColor" text-rendering="geometricPrecision">
+    <!-- Ascending Radiating Sunburst / Star Array -->
+    <path d="M256 48 L272 104 L328 88 L304 140 L360 144 L320 184 L368 216 L312 232 L256 192 L200 232 L144 216 L192 184 L152 144 L208 140 L184 88 L240 104 Z" />
+    
+    <!-- Abstract Geometric Open Book Base (Knowledge Folio) -->
+    <!-- Left Wing / Page -->
+    <path d="M244 260 L140 216 C100 240 72 288 64 360 C120 344 180 348 244 372 Z" fill-opacity="0.85" />
+    <!-- Right Wing / Page -->
+    <path d="M268 260 L372 216 C412 240 440 288 448 360 C392 344 332 348 268 372 Z" fill-opacity="0.85" />
+    
+    <!-- Central Spine Light Beacon -->
+    <polygon points="256,220 268,432 256,448 244,432" />
+    <circle cx="256" cy="144" r="20" fill-opacity="0.95" />
+  </g>
+</svg>
