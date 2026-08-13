@@ -13,6 +13,8 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
+      "@ishraq/shared-types": ["../../packages/shared-types/dist/index.d.ts"],
+      "@ishraq/shared-types/*": ["../../packages/shared-types/dist/*"],
       "@/*": ["src/*"]
     }
   },

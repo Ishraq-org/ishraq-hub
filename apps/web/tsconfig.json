@@ -23,6 +23,8 @@
     /* Path Mapping */
     "baseUrl": ".",
     "paths": {
+      "@ishraq/shared-types": ["../../packages/shared-types/src/index.ts"],
+      "@ishraq/shared-types/*": ["../../packages/shared-types/src/*"],
       "@/*": ["src/*"]
     }
   },

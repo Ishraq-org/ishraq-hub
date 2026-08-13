@@ -1,2 +1,1 @@
-// Shared TypeScript types between web and api
-export {};
+export * from './src/index.js';

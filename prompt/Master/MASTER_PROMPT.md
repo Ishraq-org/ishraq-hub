@@ -208,13 +208,23 @@ User {
   _id
   name
   email
-  passwordHash
+  passwordHash: string | null   // optional — null for Google-only accounts
+  googleId: string | null       // unique, sparse — set for Google-authenticated users
   role: 'member' | 'contributor' | 'super_admin'
   emailVerified: boolean
   bookmarks: [ArticleId]        // members only
   createdAt
 }
 ```
+Invariant: a user must have **either** `passwordHash` **or** `googleId`,
+never neither. Auth supports both **email/password and "Continue with
+Google"** — this was in the original brand vision (`My Main Prompt.md`:
+*"the 2 option is with email & continue with google"*) and the archive's
+`Security.md` already specifies the flow: Redirect → Google → Callback → JWT,
+via `passport-google-oauth20`. Account linking on Google callback: match by
+`googleId` first, then by verified `email` (link to existing account rather
+than duplicate), then create new if neither matches.
+
 Only three roles exist in v1. No `admin` tier between `contributor` and
 `super_admin`. Author/Reviewer/Moderator/Translator are future-only, not
 built.
