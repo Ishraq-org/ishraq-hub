@@ -38,6 +38,13 @@ export const Footer: React.FC = () => {
           <Link to="/advertising" className="hover:text-[var(--accent)] transition-colors">
             {t('footer.advertising')}
           </Link>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-cookie-preferences'))}
+            className="hover:text-[var(--accent)] transition-colors font-semibold text-[var(--accent)]"
+          >
+            Cookie Preferences
+          </button>
         </div>
       </div>
 
