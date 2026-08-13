@@ -37,7 +37,7 @@ export const AdminDashboard: React.FC = () => {
             </h1>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Link
               to="/editor/new"
               className="px-3.5 py-2 rounded-lg bg-[var(--accent)] text-[var(--bg-secondary)] font-bold text-xs hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-sm"
@@ -50,7 +50,21 @@ export const AdminDashboard: React.FC = () => {
               className="px-3.5 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--text-primary)] font-semibold text-xs hover:bg-[var(--bg-primary)] transition-colors flex items-center gap-1.5"
             >
               <Icon name="folder" size={14} />
-              <span>Manage Topics</span>
+              <span>Topics</span>
+            </Link>
+            <Link
+              to="/admin/inquiries"
+              className="px-3.5 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--text-primary)] font-semibold text-xs hover:bg-[var(--bg-primary)] transition-colors flex items-center gap-1.5"
+            >
+              <Icon name="mail" size={14} />
+              <span>Inquiries</span>
+            </Link>
+            <Link
+              to="/admin/sponsors"
+              className="px-3.5 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--text-primary)] font-semibold text-xs hover:bg-[var(--bg-primary)] transition-colors flex items-center gap-1.5"
+            >
+              <Icon name="user" size={14} />
+              <span>Sponsors</span>
             </Link>
           </div>
         </div>

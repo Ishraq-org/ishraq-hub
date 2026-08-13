@@ -25,6 +25,7 @@ import AdminTopics from './pages/admin/Topics';
 import AdminArticles from './pages/admin/Articles';
 import AdminUsers from './pages/admin/Users';
 import AdminSponsors from './pages/admin/Sponsors';
+import AdminInquiries from './pages/admin/Inquiries';
 import MySubmissions from './pages/contributor/MySubmissions';
 
 const queryClient = new QueryClient({
@@ -168,6 +169,16 @@ export function App() {
                   <ProtectedRoute>
                     <RoleGate allowedRoles={['super_admin']}>
                       <AdminSponsors />
+                    </RoleGate>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/inquiries"
+                element={
+                  <ProtectedRoute>
+                    <RoleGate allowedRoles={['super_admin']}>
+                      <AdminInquiries />
                     </RoleGate>
                   </ProtectedRoute>
                 }
