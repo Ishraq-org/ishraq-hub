@@ -6,8 +6,8 @@
     "build:types": "npm --workspace=packages/shared-types run build",
     "dev:web": "npm run build:types && npm --workspace=apps/web run dev",
     "dev:api": "npm run build:types && npm --workspace=apps/api run dev",
-    "build:web": "npm install && npm run build:types && npm --workspace=apps/web run build",
-    "build:api": "npm install && npm run build:types && npm --workspace=apps/api run build"
+    "build:web": "npm install --include=dev && npm run build:types && npm --workspace=apps/web run build",
+    "build:api": "npm install --include=dev && npm run build:types && npm --workspace=apps/api run build"
   },
   "workspaces": [
     "apps/*",
