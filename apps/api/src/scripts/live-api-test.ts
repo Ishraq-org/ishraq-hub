@@ -37,7 +37,7 @@ export const runLiveApiTest = async () => {
       _id: 'usr_mock12345',
       name: parseResult.data.name,
       email: parseResult.data.email,
-      role: 'member', // Ignore any body role input
+      role: 'member' as const, // Ignore any body role input
       emailVerified: false,
       bookmarks: [],
     };

@@ -5,7 +5,8 @@ import { UserRole } from '@ishraq/shared-types';
 export interface IUserDocument extends Document {
   name: string;
   email: string;
-  passwordHash: string;
+  passwordHash?: string | null;
+  googleId?: string | null;
   role: UserRole;
   emailVerified: boolean;
   emailVerificationToken?: string | null;
@@ -36,8 +37,15 @@ const UserSchema = new Schema<IUserDocument>(
     },
     passwordHash: {
       type: String,
-      required: true,
+      required: false,
+      default: null,
       select: false,
+    },
+    googleId: {
+      type: String,
+      default: null,
+      sparse: true,
+      index: true,
     },
     role: {
       type: String,
@@ -77,9 +85,9 @@ const UserSchema = new Schema<IUserDocument>(
   }
 );
 
-// Hash password before saving if modified
+// Hash password before saving if modified & present
 UserSchema.pre('save', async function (next) {
-  if (!this.isModified('passwordHash')) {
+  if (!this.isModified('passwordHash') || !this.passwordHash) {
     return next();
   }
 
@@ -96,6 +104,9 @@ UserSchema.pre('save', async function (next) {
 UserSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
+  if (!this.passwordHash) {
+    return false; // Google-only users cannot log in with password
+  }
   return bcrypt.compare(candidatePassword, this.passwordHash);
 };
 

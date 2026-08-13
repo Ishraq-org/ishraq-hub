@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import passport from 'passport';
 import { z } from 'zod';
 import { User } from '../models/User.js';
 import { validateBody } from '../middleware/validate.js';
@@ -273,6 +274,99 @@ router.get('/me', requireAuth, async (req: Request, res: Response): Promise<void
     });
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
+  }
+});
+
+// 9. Google OAuth Initiate Endpoint
+router.get('/google', (req: Request, res: Response, next) => {
+  const hasRealClientId = process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_ID !== 'MOCK_GOOGLE_CLIENT_ID';
+  if (hasRealClientId) {
+    passport.authenticate('google', { scope: ['profile', 'email'], session: false })(req, res, next);
+  } else {
+    // Development fallback when Google OAuth keys are missing
+    const mockEmail = (req.query.email as string) || 'mock.google.user@example.com';
+    const mockName = (req.query.name as string) || 'Mock Google User';
+    const mockGoogleId = (req.query.googleId as string) || 'google_mock_123456789';
+    res.redirect(`/api/auth/google/callback?mock=true&email=${encodeURIComponent(mockEmail)}&name=${encodeURIComponent(mockName)}&googleId=${encodeURIComponent(mockGoogleId)}`);
+  }
+});
+
+// 10. Google OAuth Callback Endpoint
+router.get('/google/callback', async (req: Request, res: Response, next): Promise<void> => {
+  const isMock = req.query.mock === 'true';
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+
+  const handleOAuthUser = async (profileData: { googleId: string; email: string; name: string }) => {
+    const { googleId, email, name } = profileData;
+
+    // 1. Look up by googleId first
+    let user = await User.findOne({ googleId });
+
+    if (!user) {
+      // 2. Look up by email (account linking for existing email accounts)
+      user = await User.findOne({ email });
+
+      if (user) {
+        // Link googleId and verify email if not already verified
+        user.googleId = googleId;
+        user.emailVerified = true;
+        await user.save();
+      } else {
+        // 3. Create new user with hardcoded role 'member' and verified email
+        user = new User({
+          name: name || 'Google User',
+          email: email.toLowerCase(),
+          googleId,
+          passwordHash: null,
+          role: 'member',
+          emailVerified: true,
+        });
+        await user.save();
+      }
+    }
+
+    // 4. Issue JWT and HTTP-only cookie
+    const jwtToken = signToken({
+      userId: user._id.toString(),
+      role: user.role,
+    });
+    setAuthCookie(res, jwtToken);
+
+    // 5. Redirect browser back to frontend
+    res.redirect(clientUrl);
+  };
+
+  if (isMock) {
+    try {
+      const email = String(req.query.email || 'mock.google.user@example.com');
+      const name = String(req.query.name || 'Mock Google User');
+      const googleId = String(req.query.googleId || 'google_mock_123456789');
+      await handleOAuthUser({ googleId, email, name });
+    } catch (error) {
+      res.redirect(`${clientUrl}/login?error=${encodeURIComponent((error as Error).message)}`);
+    }
+  } else {
+    passport.authenticate('google', { session: false }, async (err: any, profile: any) => {
+      if (err || !profile) {
+        res.redirect(`${clientUrl}/login?error=Google+authentication+failed`);
+        return;
+      }
+
+      try {
+        const googleId = profile.id;
+        const email = profile.emails?.[0]?.value;
+        const name = profile.displayName || profile.name?.givenName || 'Google User';
+
+        if (!email) {
+          res.redirect(`${clientUrl}/login?error=No+email+provided+by+Google`);
+          return;
+        }
+
+        await handleOAuthUser({ googleId, email, name });
+      } catch (error) {
+        res.redirect(`${clientUrl}/login?error=${encodeURIComponent((error as Error).message)}`);
+      }
+    })(req, res, next);
   }
 });
 

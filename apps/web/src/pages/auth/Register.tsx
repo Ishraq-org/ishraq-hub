@@ -7,6 +7,7 @@ import { registerApi } from '../../api/auth';
 import { RegisterInputSchema, RegisterInput } from '@ishraq/shared-types';
 import { Icon } from '../../components/icons';
 import { ThemeToggle } from '../../context/ThemeContext';
+import { GoogleButton } from '../../components/GoogleButton';
 
 export const Register: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -56,6 +57,17 @@ export const Register: React.FC = () => {
             <span>{mutation.error.message || 'Registration failed. Please try again.'}</span>
           </div>
         )}
+
+        {/* Google OAuth Button */}
+        <GoogleButton text="Sign up with Google" />
+
+        {/* Divider */}
+        <div className="relative flex items-center justify-center my-4">
+          <div className="border-t border-[var(--border)] w-full" />
+          <span className="bg-[var(--bg-secondary)] px-3 text-xs text-[var(--text-muted)] uppercase tracking-wider font-semibold absolute">
+            or
+          </span>
+        </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Full Name */}

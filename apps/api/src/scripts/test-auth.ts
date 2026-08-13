@@ -21,7 +21,7 @@ export const runAuthTests = async () => {
 
   // 2. Test JWT Signing & Verification
   console.log('2. Testing JWT signing & payload restriction...');
-  const mockPayload = { userId: 'usr_123456', role: 'member' };
+  const mockPayload = { userId: 'usr_123456', role: 'member' as const };
   const token = signToken(mockPayload);
   const decoded = verifyToken(token);
 

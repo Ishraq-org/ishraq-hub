@@ -1,8 +1,9 @@
 import jwt from 'jsonwebtoken';
+import { UserRole } from '@ishraq/shared-types';
 
 export interface JwtPayload {
   userId: string;
-  role: string;
+  role: UserRole;
 }
 
 const getJwtSecret = (): string => {
