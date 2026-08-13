@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import passport from './config/passport.js';
 import healthRouter from './routes/health.routes.js';
 import authRouter from './routes/auth.routes.js';
+import articlesRouter from './routes/articles.js';
 import { connectDB } from './config/db.js';
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.use(passport.initialize());
 // Routes
 app.use('/api', healthRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/articles', articlesRouter);
 
 // Attempt database connection if URI exists
 connectDB();

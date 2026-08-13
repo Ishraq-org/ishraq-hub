@@ -14,6 +14,8 @@ import VerifyEmail from './pages/auth/VerifyEmail';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import PolicyPage from './pages/policy/PolicyPage';
+import NewArticlePage from './pages/editor/NewArticlePage';
+import ArticleEditorPage from './pages/editor/ArticleEditorPage';
 import useT from './hooks/useT';
 
 const queryClient = new QueryClient({
@@ -219,18 +221,23 @@ export function App() {
                   </ProtectedRoute>
                 }
               />
+              {/* Editor Routes (Protected for Contributors & Super Admins) */}
               <Route
-                path="/admin-demo"
+                path="/editor/new"
                 element={
                   <ProtectedRoute>
                     <RoleGate allowedRoles={['contributor', 'super_admin']}>
-                      <div className="flex-1 flex items-center justify-center p-6">
-                        <div className="max-w-md w-full p-8 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] text-center space-y-3">
-                          <h1 className="text-xl font-bold text-[var(--accent)]">Admin / Contributor Portal</h1>
-                          <p className="text-xs text-[var(--text-muted)]">Elevated permissions confirmed via RoleGate.</p>
-                          <Link to="/" className="inline-block text-xs font-semibold text-[var(--accent)] mt-2">← Back Home</Link>
-                        </div>
-                      </div>
+                      <NewArticlePage />
+                    </RoleGate>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/editor/:articleId/:language"
+                element={
+                  <ProtectedRoute>
+                    <RoleGate allowedRoles={['contributor', 'super_admin']}>
+                      <ArticleEditorPage />
                     </RoleGate>
                   </ProtectedRoute>
                 }
