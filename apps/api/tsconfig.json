@@ -12,11 +12,10 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "jsx": "react-jsx",
-    "baseUrl": ".",
     "paths": {
-      "@ishraq/shared-types": ["../../packages/shared-types/dist/index.d.ts"],
-      "@ishraq/shared-types/*": ["../../packages/shared-types/dist/*"],
-      "@/*": ["src/*"]
+      "@ishraq/shared-types": ["./../../packages/shared-types/dist/index.d.ts"],
+      "@ishraq/shared-types/*": ["./../../packages/shared-types/dist/*"],
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src/**/*"]
