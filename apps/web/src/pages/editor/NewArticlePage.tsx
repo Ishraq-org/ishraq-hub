@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Icon } from '../../components/icons';
+import { ImageUploadField } from '../../components/ImageUploadField';
 
 export const NewArticlePage: React.FC = () => {
   const navigate = useNavigate();
   const [articleType, setArticleType] = useState<'term' | 'general'>('term');
   const [title, setTitle] = useState('');
+  const [coverImage, setCoverImage] = useState<string | null>(null);
   const [language, setLanguage] = useState<'en' | 'am'>('en');
   const [category, setCategory] = useState('Islamic Apologetics');
   const [topicId, setTopicId] = useState('');
@@ -57,7 +59,6 @@ export const NewArticlePage: React.FC = () => {
       return;
     }
 
-    // Default to first topic if none selected
     let selectedTopicId = topicId;
     if (!selectedTopicId && topicsData && topicsData.length > 0) {
       selectedTopicId = topicsData[0]._id;
@@ -75,6 +76,7 @@ export const NewArticlePage: React.FC = () => {
       tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
       language,
       title,
+      coverImage: coverImage || undefined,
     });
   };
 
@@ -132,10 +134,6 @@ export const NewArticlePage: React.FC = () => {
                 </p>
               </button>
             </div>
-            {/* Note on Shubha restriction per Prompt 08 §84 */}
-            <p className="text-[10px] text-[var(--text-muted)] mt-2 italic">
-              * Note: Shubha (misconception refutation) type is restricted until the auto-scaffold extension prompt is enabled.
-            </p>
           </div>
 
           {/* Title */}
@@ -148,6 +146,17 @@ export const NewArticlePage: React.FC = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none"
+            />
+          </div>
+
+          {/* Cover Image Upload (Prompt 13 §90-91) */}
+          <div>
+            <ImageUploadField
+              label="Article Hero Cover Image (Optional)"
+              folder="covers"
+              value={coverImage}
+              onChange={setCoverImage}
+              placeholder="Upload cover image to Cloudinary (Max 10MB)"
             />
           </div>
 
@@ -190,11 +199,11 @@ export const NewArticlePage: React.FC = () => {
                 {topicsData && topicsData.length > 0 ? (
                   topicsData.map((topic: any) => (
                     <option key={topic._id} value={topic._id}>
-                      {topic.title?.en || topic.slug}
+                      {topic.title?.en || topic.name?.en || topic.slug?.en || topic.slug}
                     </option>
                   ))
                 ) : (
-                  <option value="">No topics available (Will auto-generate)</option>
+                  <option value="">No topics available</option>
                 )}
               </select>
             )}

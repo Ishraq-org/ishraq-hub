@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Icon } from '../../icons';
+import { ImageUploadField } from '../../ImageUploadField';
 import {
   QuranVerseNodeSchema,
   HadithNodeSchema,
@@ -53,9 +54,9 @@ export const NodeInsertionModal: React.FC<NodeInsertionModalProps> = ({
   const [isFetchingBible, setIsFetchingBible] = useState(false);
 
   // Evidence Image state
-  const [primaryUrl, setPrimaryUrl] = useState('');
+  const [primaryUrl, setPrimaryUrl] = useState<string | null>(null);
   const [primaryAlt, setPrimaryAlt] = useState('');
-  const [secondaryUrl, setSecondaryUrl] = useState('');
+  const [secondaryUrl, setSecondaryUrl] = useState<string | null>(null);
   const [secondaryAlt, setSecondaryAlt] = useState('');
   const [imgCaption, setImgCaption] = useState('');
   const [citationTitle, setCitationTitle] = useState('');
@@ -72,7 +73,7 @@ export const NodeInsertionModal: React.FC<NodeInsertionModalProps> = ({
 
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  // Quran Auto-Fetch via Al Quran Cloud API per Prompt 09 §32-36
+  // Quran Auto-Fetch
   const fetchQuranVerse = async () => {
     setIsFetchingQuran(true);
     setValidationError(null);
@@ -95,7 +96,7 @@ export const NodeInsertionModal: React.FC<NodeInsertionModalProps> = ({
     }
   };
 
-  // Bible Auto-Fetch via bible-api.com per Prompt 09 §46-58 (Public domain only)
+  // Bible Auto-Fetch
   const isPublicDomainBibleVersion = (ver: string) => ['kjv', 'web', 'asv'].includes(ver.toLowerCase());
 
   const fetchBibleVerse = async () => {
@@ -153,15 +154,19 @@ export const NodeInsertionModal: React.FC<NodeInsertionModalProps> = ({
         BibleVerseNodeSchema.parse({ type: 'bibleVerse', ...attrs });
         onConfirm('bibleVerse', attrs);
       } else if (nodeType === 'evidenceImage') {
+        if (!primaryUrl) {
+          throw new Error('Primary Evidence Image is required');
+        }
+
         const attrs = {
-          primaryImage: { url: primaryUrl.trim(), alt: primaryAlt.trim() || 'Primary Evidence' },
-          secondaryImage: secondaryUrl.trim()
+          primaryImage: { url: primaryUrl.trim(), alt: primaryAlt.trim() || 'Primary Evidence Plate' },
+          secondaryImage: secondaryUrl?.trim()
             ? { url: secondaryUrl.trim(), alt: secondaryAlt.trim() || 'Secondary Plate' }
             : null,
           caption: imgCaption.trim(),
           citation: {
             sourceType: 'book',
-            title: citationTitle.trim() || 'Source Archive',
+            title: citationTitle.trim() || 'Source Manuscript Archive',
             author: citationAuthor.trim() || 'Author',
             publisher: citationPublisher.trim() || 'Publisher',
             year: Number(citationYear) || new Date().getFullYear(),
@@ -419,54 +424,41 @@ export const NodeInsertionModal: React.FC<NodeInsertionModalProps> = ({
             </>
           )}
 
-          {/* 4. Evidence Image Form */}
+          {/* 4. Evidence Image Form (Direct-to-Cloudinary retrofitted per Prompt 13 §92-94) */}
           {nodeType === 'evidenceImage' && (
             <>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-semibold mb-1">Primary Image URL</label>
-                  <input
-                    type="url"
-                    required
-                    placeholder="https://cloudinary.com/..."
-                    value={primaryUrl}
-                    onChange={(e) => setPrimaryUrl(e.target.value)}
-                    className="w-full px-2.5 py-1.5 rounded border border-[var(--border)] bg-[var(--bg-primary)] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-1">Primary Alt Text</label>
-                  <input
-                    type="text"
-                    placeholder="Primary Plate Alt"
-                    value={primaryAlt}
-                    onChange={(e) => setPrimaryAlt(e.target.value)}
-                    className="w-full px-2.5 py-1.5 rounded border border-[var(--border)] bg-[var(--bg-primary)] focus:outline-none"
-                  />
-                </div>
+              <div className="space-y-3">
+                <ImageUploadField
+                  label="Primary Evidence Image (Required)"
+                  folder="evidence"
+                  value={primaryUrl}
+                  onChange={setPrimaryUrl}
+                  placeholder="Upload primary manuscript/document image (Max 10MB)"
+                />
+                <input
+                  type="text"
+                  placeholder="Primary Image Alt Text (e.g. Birmingham Folio 1 Subtext)"
+                  value={primaryAlt}
+                  onChange={(e) => setPrimaryAlt(e.target.value)}
+                  className="w-full px-2.5 py-1.5 rounded border border-[var(--border)] bg-[var(--bg-primary)] focus:outline-none"
+                />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-semibold mb-1">Secondary Image URL (Optional)</label>
-                  <input
-                    type="url"
-                    placeholder="https://cloudinary.com/..."
-                    value={secondaryUrl}
-                    onChange={(e) => setSecondaryUrl(e.target.value)}
-                    className="w-full px-2.5 py-1.5 rounded border border-[var(--border)] bg-[var(--bg-primary)] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-1">Secondary Alt Text</label>
-                  <input
-                    type="text"
-                    placeholder="Volume Cover Alt"
-                    value={secondaryAlt}
-                    onChange={(e) => setSecondaryAlt(e.target.value)}
-                    className="w-full px-2.5 py-1.5 rounded border border-[var(--border)] bg-[var(--bg-primary)] focus:outline-none"
-                  />
-                </div>
+              <div className="space-y-3 pt-2 border-t border-[var(--border)]">
+                <ImageUploadField
+                  label="Secondary Plate Image (Optional)"
+                  folder="evidence"
+                  value={secondaryUrl}
+                  onChange={setSecondaryUrl}
+                  placeholder="Upload secondary plate or binding cover image (Optional)"
+                />
+                <input
+                  type="text"
+                  placeholder="Secondary Image Alt Text (Optional)"
+                  value={secondaryAlt}
+                  onChange={(e) => setSecondaryAlt(e.target.value)}
+                  className="w-full px-2.5 py-1.5 rounded border border-[var(--border)] bg-[var(--bg-primary)] focus:outline-none"
+                />
               </div>
 
               <div>

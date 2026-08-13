@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TipTapEditor } from '../../components/editor/TipTapEditor';
 import { Icon } from '../../components/icons';
 import { fetchMeApi } from '../../api/auth';
+import { ImageUploadField } from '../../components/ImageUploadField';
 
 type SaveState = 'saved' | 'saving' | 'error' | 'idle';
 
@@ -13,6 +14,7 @@ export const ArticleEditorPage: React.FC = () => {
   const queryClient = useQueryClient();
 
   const [title, setTitle] = useState('');
+  const [coverImage, setCoverImage] = useState<string | null>(null);
   const [content, setContent] = useState<Record<string, any> | null>(null);
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [reviewNotesInput, setReviewNotesInput] = useState('');
@@ -50,12 +52,15 @@ export const ArticleEditorPage: React.FC = () => {
     if (translationData) {
       setTitle(translationData.title);
       setContent(translationData.content);
+      if (translationData.coverImage) {
+        setCoverImage(translationData.coverImage);
+      }
     }
   }, [translationData]);
 
   // Patch / Autosave Mutation
   const patchMutation = useMutation({
-    mutationFn: async (payload: { title?: string; content?: Record<string, any> }) => {
+    mutationFn: async (payload: { title?: string; content?: Record<string, any>; coverImage?: string | null }) => {
       const res = await fetch(`/api/articles/${articleId}/translations/${language}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -81,7 +86,7 @@ export const ArticleEditorPage: React.FC = () => {
   const autosaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const triggerAutosave = useCallback(
-    (newTitle: string, newContent: Record<string, any>) => {
+    (newTitle: string, newContent: Record<string, any>, newCover: string | null) => {
       if (autosaveTimerRef.current) {
         clearTimeout(autosaveTimerRef.current);
       }
@@ -89,7 +94,7 @@ export const ArticleEditorPage: React.FC = () => {
       setSaveState('saving');
 
       autosaveTimerRef.current = setTimeout(() => {
-        patchMutation.mutate({ title: newTitle, content: newContent });
+        patchMutation.mutate({ title: newTitle, content: newContent, coverImage: newCover });
       }, 2500); // 2.5 second debounce per Prompt 08 §90
     },
     [patchMutation]
@@ -99,13 +104,20 @@ export const ArticleEditorPage: React.FC = () => {
     const val = e.target.value;
     setTitle(val);
     if (content) {
-      triggerAutosave(val, content);
+      triggerAutosave(val, content, coverImage);
     }
   };
 
   const handleContentChange = (jsonContent: Record<string, any>) => {
     setContent(jsonContent);
-    triggerAutosave(title, jsonContent);
+    triggerAutosave(title, jsonContent, coverImage);
+  };
+
+  const handleCoverImageChange = (newUrl: string | null) => {
+    setCoverImage(newUrl);
+    if (content) {
+      triggerAutosave(title, content, newUrl);
+    }
   };
 
   // Submit for Review Mutation
@@ -227,7 +239,6 @@ export const ArticleEditorPage: React.FC = () => {
 
         {/* Right Side: Unobtrusive Autosave Indicator & Actions */}
         <div className="flex items-center gap-4">
-          {/* Unobtrusive Save State Indicator per Prompt 08 §91 */}
           <div className="text-xs font-medium flex items-center gap-1.5">
             {saveState === 'saving' && (
               <span className="text-amber-500 flex items-center gap-1.5 animate-pulse">
@@ -249,7 +260,6 @@ export const ArticleEditorPage: React.FC = () => {
             )}
           </div>
 
-          {/* Action Buttons */}
           {(isOwner || isSuperAdmin) &&
             (translationData.status === 'draft' || translationData.status === 'changes_requested') && (
               <button
@@ -300,6 +310,18 @@ export const ArticleEditorPage: React.FC = () => {
           <div className="p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-700 text-xs space-y-1 shadow-sm">
             <p className="font-bold uppercase tracking-wider">Reviewer Feedback:</p>
             <p>{translationData.reviewNotes}</p>
+          </div>
+        )}
+
+        {/* Article Cover Image Upload (Prompt 13 §90-91) */}
+        {!isReadOnly && (
+          <div className="bg-[var(--bg-secondary)] p-5 rounded-xl border border-[var(--border)] shadow-sm">
+            <ImageUploadField
+              label="Article Hero Cover Image"
+              folder="covers"
+              value={coverImage}
+              onChange={handleCoverImageChange}
+            />
           </div>
         )}
 
