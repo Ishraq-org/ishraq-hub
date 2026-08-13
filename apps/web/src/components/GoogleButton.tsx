@@ -11,7 +11,10 @@ export const GoogleButton: React.FC<GoogleButtonProps> = ({
 }) => {
   const handleClick = () => {
     // Full browser navigation to backend OAuth initiate route
-    window.location.href = '/api/auth/google';
+    const env = (import.meta as any).env || {};
+    const apiUrl = env.VITE_API_URL || '';
+    const targetUrl = `${apiUrl}/api/auth/google`;
+    window.location.href = targetUrl;
   };
 
   return (
