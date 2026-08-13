@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { Article } from '../models/Article.js';
 import { ArticleTranslation } from '../models/ArticleTranslation.js';
 import { Topic } from '../models/Topic.js';
+import { User } from '../models/User.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { validateBody } from '../middleware/validate.js';
 import { syncArticleLinks } from '../services/link-graph.js';
@@ -55,6 +56,162 @@ const ReviewTranslationSchema = z.object({
   decision: z.enum(['approve', 'request_changes']),
   reviewNotes: z.string().optional(),
 });
+
+// GET /api/articles/by-slug/:language/:slug — Public article reading endpoint (Prompt 11 §8-48)
+articlesRouter.get(
+  '/by-slug/:language/:slug',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const language = getParam(req.params, 'language') || 'en';
+      const slug = getParam(req.params, 'slug');
+
+      // 1. Fetch ArticleTranslation by language and slug
+      const translation = await ArticleTranslation.findOne({ language, slug });
+
+      // SECURITY DEFAULT (Prompt 11 §15-20): If not found OR status !== 'published', return 404
+      if (!translation || translation.status !== 'published') {
+        res.status(404).json({ error: 'Article not found' });
+        return;
+      }
+
+      // 2. Fetch parent Article shell
+      const article = await Article.findById(translation.articleId);
+      if (!article) {
+        res.status(404).json({ error: 'Article shell not found' });
+        return;
+      }
+
+      // 3. Resolve author name (never expose email, password, or role)
+      let authorName = 'Ishraq Scholar';
+      if (translation.authorId) {
+        const authorUser = await User.findById(translation.authorId).select('name');
+        if (authorUser?.name) {
+          authorName = authorUser.name;
+        }
+      }
+
+      // 4. Resolve translations summary for language toggle (Prompt 11 §30-34 & Section 3)
+      const allTranslations = await ArticleTranslation.find({
+        articleId: article._id,
+      });
+
+      const enTrans = allTranslations.find((t) => t.language === 'en' && t.status === 'published');
+      const amTrans = allTranslations.find((t) => t.language === 'am' && t.status === 'published');
+
+      const translationsSummary = {
+        en: enTrans ? { slug: enTrans.slug, status: enTrans.status } : null,
+        am: amTrans ? { slug: amTrans.slug, status: amTrans.status } : null,
+      };
+
+      // 5. Resolve topic breadcrumb chain (root to leaf)
+      const breadcrumb: Array<{ name: string; slug: string }> = [];
+      let currentTopicId: mongoose.Types.ObjectId | null | undefined = article.topicId;
+
+      while (currentTopicId) {
+        const tDoc: any = await Topic.findById(currentTopicId);
+        if (!tDoc) break;
+
+        const langKey = language === 'am' ? 'am' : 'en';
+        const tName = tDoc.name?.[langKey] || tDoc.name?.en || 'Topic';
+        const tSlug = tDoc.slug?.[langKey] || tDoc.slug?.en || 'topic';
+
+        breadcrumb.unshift({ name: tName, slug: tSlug });
+        currentTopicId = tDoc.parentTopicId;
+      }
+
+      // 6. Resolve nextRelatedShubhaPreview if set
+      let nextRelatedShubhaPreview: any = null;
+      if (article.nextRelatedShubha) {
+        const nextArt = await Article.findById(article.nextRelatedShubha);
+        if (nextArt) {
+          let nextTrans = await ArticleTranslation.findOne({
+            articleId: nextArt._id,
+            language,
+            status: 'published',
+          });
+          if (!nextTrans) {
+            nextTrans = await ArticleTranslation.findOne({
+              articleId: nextArt._id,
+              status: 'published',
+            });
+          }
+          if (nextTrans) {
+            nextRelatedShubhaPreview = {
+              id: String(nextArt._id),
+              title: nextTrans.title,
+              slug: nextTrans.slug,
+              language: nextTrans.language,
+              description: nextTrans.seo?.metaDescription || '',
+              coverImage: nextArt.coverImage || null,
+              category: nextArt.category,
+            };
+          }
+        }
+      }
+
+      // 7. Resolve relatedArticles in same topic (published, limit ~4-6)
+      const relatedDocs = await Article.find({
+        topicId: article.topicId,
+        _id: { $ne: article._id },
+      }).limit(6);
+
+      const relatedArticles: any[] = [];
+      for (const rArt of relatedDocs) {
+        let rTrans = await ArticleTranslation.findOne({
+          articleId: rArt._id,
+          language,
+          status: 'published',
+        });
+        if (!rTrans) {
+          rTrans = await ArticleTranslation.findOne({
+            articleId: rArt._id,
+            status: 'published',
+          });
+        }
+        if (rTrans) {
+          relatedArticles.push({
+            id: String(rArt._id),
+            title: rTrans.title,
+            slug: rTrans.slug,
+            language: rTrans.language,
+            coverImage: rArt.coverImage || null,
+            category: rArt.category,
+          });
+        }
+      }
+
+      res.json({
+        translation: {
+          _id: String(translation._id),
+          title: translation.title,
+          content: translation.content,
+          seo: translation.seo,
+          publishedAt: translation.publishedAt,
+          slug: translation.slug,
+          language: translation.language,
+          status: translation.status,
+        },
+        article: {
+          _id: String(article._id),
+          topicId: String(article.topicId),
+          category: article.category,
+          tags: article.tags || [],
+          coverImage: article.coverImage || null,
+          articleType: article.articleType,
+          nextRelatedShubhaPreview,
+        },
+        author: {
+          name: authorName,
+        },
+        translationsSummary,
+        breadcrumb,
+        relatedArticles,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 // GET /api/articles/search?q=...&language=en|am — Internal linking search endpoint (Prompt 10 §12-20)
 articlesRouter.get(

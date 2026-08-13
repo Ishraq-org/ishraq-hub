@@ -16,6 +16,7 @@ import ResetPassword from './pages/auth/ResetPassword';
 import PolicyPage from './pages/policy/PolicyPage';
 import NewArticlePage from './pages/editor/NewArticlePage';
 import ArticleEditorPage from './pages/editor/ArticleEditorPage';
+import ArticleReadingPage from './pages/article/ArticleReadingPage';
 import useT from './hooks/useT';
 
 const queryClient = new QueryClient({
@@ -137,33 +138,6 @@ const TopicPlaceholder: React.FC = () => {
   );
 };
 
-/* Language Prefixed Article Placeholder Screen */
-const ArticlePlaceholder: React.FC = () => {
-  const { lang, slug } = useParams<{ lang: string; slug: string }>();
-
-  return (
-    <div className="flex-1 flex flex-col items-center justify-center p-6 max-w-2xl mx-auto w-full text-center space-y-4">
-      <div className="w-12 h-12 rounded-full bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center justify-center text-[var(--accent)] mx-auto font-bold text-lg">
-        {lang?.toUpperCase() || 'EN'}
-      </div>
-      <h1 className="text-2xl font-bold text-[var(--text-primary)]">
-        Article Slug: {slug}
-      </h1>
-      <p className="text-xs text-[var(--text-muted)]">
-        Language Route: <code className="font-mono text-[var(--accent)]">/{lang}/articles/{slug}</code>
-      </p>
-      <div className="pt-2">
-        <Link
-          to="/"
-          className="inline-block text-xs font-semibold px-4 py-2 rounded border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--border)] transition-colors"
-        >
-          ← Back Home
-        </Link>
-      </div>
-    </div>
-  );
-};
-
 /* Protected Dashboard Component */
 const ProtectedDashboardDemo: React.FC = () => {
   const { data } = useQuery({ queryKey: ['me'], queryFn: fetchMeApi });
@@ -196,14 +170,16 @@ export function App() {
       <ThemeProvider>
         <BrowserRouter>
           <Routes>
+            {/* Public Article Reading Page (Standalone Header & Layout) */}
+            <Route path="/:language/articles/:slug" element={<ArticleReadingPage />} />
+
             {/* Main Application Layout Wrapper */}
             <Route element={<Layout />}>
               <Route path="/" element={<HomePage />} />
 
-              {/* Language-Prefixed Content Routes */}
+              {/* Language-Prefixed Topic Content Routes */}
               <Route path="/:lang/topics" element={<TopicPlaceholder />} />
               <Route path="/:lang/topics/:slug" element={<TopicPlaceholder />} />
-              <Route path="/:lang/articles/:slug" element={<ArticlePlaceholder />} />
 
               {/* Static Policy Placeholder Routes (Unprefixed) */}
               <Route path="/privacy" element={<PolicyPage />} />
