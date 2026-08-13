@@ -14,6 +14,7 @@ class SlashMenuRegistryClass {
 
   constructor() {
     this.registerStandardCommands();
+    this.registerCustomNodeCommands();
   }
 
   private registerStandardCommands() {
@@ -88,6 +89,74 @@ class SlashMenuRegistryClass {
       category: 'standard',
       command: (editor) =>
         editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+    });
+  }
+
+  private registerCustomNodeCommands() {
+    this.register({
+      id: 'quranVerse',
+      title: 'Quran Verse',
+      description: 'Arabic Uthmani text with translation',
+      icon: 'quran',
+      category: 'custom',
+      command: () => {
+        window.dispatchEvent(new CustomEvent('open-node-modal', { detail: { nodeType: 'quranVerse' } }));
+      },
+    });
+
+    this.register({
+      id: 'hadith',
+      title: 'Hadith Narration',
+      description: 'Prophetic tradition with grade badge',
+      icon: 'hadith',
+      category: 'custom',
+      command: () => {
+        window.dispatchEvent(new CustomEvent('open-node-modal', { detail: { nodeType: 'hadith' } }));
+      },
+    });
+
+    this.register({
+      id: 'bibleVerse',
+      title: 'Bible Verse',
+      description: 'Biblical citation with version attribution',
+      icon: 'cross',
+      category: 'custom',
+      command: () => {
+        window.dispatchEvent(new CustomEvent('open-node-modal', { detail: { nodeType: 'bibleVerse' } }));
+      },
+    });
+
+    this.register({
+      id: 'evidenceImage',
+      title: 'Evidence Image',
+      description: 'Primary & volume cover plates with citation',
+      icon: 'evidence',
+      category: 'custom',
+      command: () => {
+        window.dispatchEvent(new CustomEvent('open-node-modal', { detail: { nodeType: 'evidenceImage' } }));
+      },
+    });
+
+    this.register({
+      id: 'callout',
+      title: 'Callout Box',
+      description: 'Semantic box (Answer, Warning, Info, Claim)',
+      icon: 'callout',
+      category: 'custom',
+      command: () => {
+        window.dispatchEvent(new CustomEvent('open-node-modal', { detail: { nodeType: 'callout' } }));
+      },
+    });
+
+    this.register({
+      id: 'footnote',
+      title: 'Footnote Reference',
+      description: 'Inline superscript citation with hover card',
+      icon: 'footnote',
+      category: 'custom',
+      command: () => {
+        window.dispatchEvent(new CustomEvent('open-node-modal', { detail: { nodeType: 'footnote' } }));
+      },
     });
   }
 
