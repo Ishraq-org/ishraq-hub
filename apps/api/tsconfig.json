@@ -11,6 +11,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
+    "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
       "@ishraq/shared-types": ["../../packages/shared-types/dist/index.d.ts"],
