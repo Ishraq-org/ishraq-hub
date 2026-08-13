@@ -18,10 +18,11 @@ const COOKIE_NAME = 'ishraq_session';
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 const setAuthCookie = (res: Response, token: string) => {
+  const isProduction = process.env.NODE_ENV === 'production';
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: SEVEN_DAYS_MS,
   });
 };

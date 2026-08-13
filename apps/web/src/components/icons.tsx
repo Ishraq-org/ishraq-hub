@@ -8,6 +8,12 @@ import {
   ChevronDown,
   User,
   ExternalLink,
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  CheckCircle,
+  AlertCircle,
   LucideProps,
 } from 'lucide-react';
 
@@ -23,6 +29,15 @@ const iconMap = {
   user: User,
   'external-link': ExternalLink,
   externallink: ExternalLink,
+  eye: Eye,
+  'eye-off': EyeOff,
+  eyeoff: EyeOff,
+  mail: Mail,
+  lock: Lock,
+  'check-circle': CheckCircle,
+  checkcircle: CheckCircle,
+  'alert-circle': AlertCircle,
+  alertcircle: AlertCircle,
 } as const;
 
 export type IconName = keyof typeof iconMap;
