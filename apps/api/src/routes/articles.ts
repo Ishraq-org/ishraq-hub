@@ -5,6 +5,7 @@ import { ArticleTranslation } from '../models/ArticleTranslation.js';
 import { Topic } from '../models/Topic.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { validateBody } from '../middleware/validate.js';
+import { syncArticleLinks } from '../services/link-graph.js';
 import { z } from 'zod';
 import { ArticleTypeSchema, ArticleLanguageSchema } from '@ishraq/shared-types';
 
@@ -54,6 +55,46 @@ const ReviewTranslationSchema = z.object({
   decision: z.enum(['approve', 'request_changes']),
   reviewNotes: z.string().optional(),
 });
+
+// GET /api/articles/search?q=...&language=en|am — Internal linking search endpoint (Prompt 10 §12-20)
+articlesRouter.get(
+  '/search',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const q = String(req.query.q || '').trim();
+      const language = (req.query.language as string) || 'en';
+
+      if (!q) {
+        res.json({ results: [] });
+        return;
+      }
+
+      const searchFilter: Record<string, any> = {
+        status: 'published',
+        language,
+        title: { $regex: q, $options: 'i' },
+      };
+
+      const translations = await ArticleTranslation.find(searchFilter)
+        .limit(10)
+        .populate<{ articleId: any }>('articleId', 'category articleType coverImage')
+        .lean();
+
+      const results = translations.map((t) => ({
+        articleId: t.articleId?._id ? String(t.articleId._id) : String(t.articleId),
+        translationId: String(t._id),
+        title: t.title,
+        category: t.articleId?.category || 'General',
+        slug: t.slug,
+        language: t.language,
+      }));
+
+      res.json({ results });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 // 1. POST /api/articles — Create Article shell + initial ArticleTranslation
 articlesRouter.post(
@@ -223,6 +264,11 @@ articlesRouter.patch(
 
       await translation.save();
 
+      // Wire syncArticleLinks per Prompt 10 §22-26
+      await syncArticleLinks(translation.articleId, translation.content).catch((err) => {
+        console.error('[ArticleLink Sync] Error updating link graph:', err);
+      });
+
       res.json({
         message: 'Translation updated successfully',
         translation,
@@ -345,6 +391,11 @@ articlesRouter.post(
       }
 
       await translation.save();
+
+      // Sync links upon publication as well
+      await syncArticleLinks(translation.articleId, translation.content).catch((err) => {
+        console.error('[ArticleLink Sync] Error updating link graph on review:', err);
+      });
 
       res.json({
         message: `Translation review complete: ${decision}`,

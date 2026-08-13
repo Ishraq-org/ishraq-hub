@@ -323,6 +323,7 @@ export const ArticleEditorPage: React.FC = () => {
           content={content}
           onChange={handleContentChange}
           editable={!isReadOnly}
+          language={lang}
         />
       </main>
 

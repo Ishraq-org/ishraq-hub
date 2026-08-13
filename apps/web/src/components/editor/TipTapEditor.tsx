@@ -5,7 +5,6 @@ import { Table } from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
-import Link from '@tiptap/extension-link';
 import Suggestion from '@tiptap/suggestion';
 import tippy, { Instance as TippyInstance } from 'tippy.js';
 import { ReactRenderer } from '@tiptap/react';
@@ -14,6 +13,8 @@ import SlashMenuRegistry, { SlashCommandItem } from './SlashMenuRegistry';
 import EditorToolbar from './EditorToolbar';
 import { NodeInsertionModal, CustomNodeType } from './modals/NodeInsertionModal';
 import FootnoteReferenceList from './FootnoteReferenceList';
+
+import ArticleLinkMark from './marks/ArticleLinkMark';
 
 // Custom Node Extensions
 import QuranVerseNode from './nodes/QuranVerseNode';
@@ -27,6 +28,7 @@ interface TipTapEditorProps {
   content: Record<string, any> | null | undefined;
   onChange?: (jsonContent: Record<string, any>) => void;
   editable?: boolean;
+  language?: string;
 }
 
 const SlashCommandExtension = Extension.create({
@@ -123,6 +125,7 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
   content,
   onChange,
   editable = true,
+  language = 'en',
 }) => {
   const [activeModalNodeType, setActiveModalNodeType] = useState<CustomNodeType | null>(null);
 
@@ -140,12 +143,7 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
       TableRow,
       TableHeader,
       TableCell,
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-[var(--accent)] underline hover:opacity-80 transition-opacity',
-        },
-      }),
+      ArticleLinkMark,
       SlashCommandExtension,
       // All 6 Custom Node Extensions
       QuranVerseNode,
@@ -207,7 +205,7 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
 
   return (
     <div className="w-full border border-[var(--border)] rounded-lg bg-[var(--bg-primary)] overflow-hidden shadow-sm flex flex-col min-h-[450px]">
-      {editable && <EditorToolbar editor={editor} />}
+      {editable && <EditorToolbar editor={editor} language={language} />}
 
       <div className="flex-1 p-6 text-[var(--text-primary)] prose max-w-none focus:outline-none">
         <EditorContent editor={editor} className="min-h-[350px] outline-none" />
